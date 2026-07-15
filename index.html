@@ -120,6 +120,15 @@
 
   .badge {
     display: inline-block;
+    background: var(--color-ink-soft);
+    color: #fafafa;
+    border-radius: 18px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .badge-success {
+    display: inline-block;
     background: var(--color-success);
     color: #ffffff;
     border-radius: 18px;
@@ -127,7 +136,7 @@
     font-size: 12px;
     font-weight: 500;
   }
-  .badge-outline {
+  .badge-error {
     display: inline-block;
     background: var(--color-error);
     color: #ffffff;
@@ -135,9 +144,8 @@
     padding: 2px 8px;
     font-size: 12px;
     font-weight: 500;
-    border: none;
   }
-  .badge-soft {
+  .badge-neutral {
     display: inline-block;
     background: var(--color-canvas);
     color: var(--color-ink-soft);
@@ -237,9 +245,9 @@ const INLINE_THRESHOLD = 0.005; // 0.5%
 function surpriseBadge(label, value) {
   if (value === null || value === undefined) return "";
   let symbol, cls, word;
-  if (value > INLINE_THRESHOLD) { symbol = "▲"; cls = "badge"; word = "Beat"; }
-  else if (value < -INLINE_THRESHOLD) { symbol = "▼"; cls = "badge-outline"; word = "Miss"; }
-  else { symbol = "▬"; cls = "badge-soft"; word = "In line"; }
+  if (value > INLINE_THRESHOLD) { symbol = "▲"; cls = "badge-success"; word = "Beat"; }
+  else if (value < -INLINE_THRESHOLD) { symbol = "▼"; cls = "badge-error"; word = "Miss"; }
+  else { symbol = "▬"; cls = "badge-neutral"; word = "In line"; }
   return `<span class="${cls}" title="${label}: ${word} (${fmtPct(value)})">${symbol} ${label}</span>`;
 }
 
@@ -253,12 +261,12 @@ function guidanceBadge(item) {
   let symbol, cls, word;
   const s = String(raw).toLowerCase();
   if (typeof raw === "number") {
-    if (raw > 0) { symbol = "▲"; cls = "badge"; word = "Raised"; }
-    else if (raw < 0) { symbol = "▼"; cls = "badge-outline"; word = "Lowered"; }
-    else { symbol = "▬"; cls = "badge-soft"; word = "Reaffirmed"; }
-  } else if (/raise|above|better|beat/.test(s)) { symbol = "▲"; cls = "badge"; word = "Raised"; }
-  else if (/lower|below|worse|cut/.test(s)) { symbol = "▼"; cls = "badge-outline"; word = "Lowered"; }
-  else { symbol = "▬"; cls = "badge-soft"; word = "Reaffirmed"; }
+    if (raw > 0) { symbol = "▲"; cls = "badge-success"; word = "Raised"; }
+    else if (raw < 0) { symbol = "▼"; cls = "badge-error"; word = "Lowered"; }
+    else { symbol = "▬"; cls = "badge-neutral"; word = "Reaffirmed"; }
+  } else if (/raise|above|better|beat/.test(s)) { symbol = "▲"; cls = "badge-success"; word = "Raised"; }
+  else if (/lower|below|worse|cut/.test(s)) { symbol = "▼"; cls = "badge-error"; word = "Lowered"; }
+  else { symbol = "▬"; cls = "badge-neutral"; word = "Reaffirmed"; }
   return `<span class="${cls}" title="Guidance: ${word}">${symbol} Guidance</span>`;
 }
 
