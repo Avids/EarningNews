@@ -235,8 +235,11 @@ function fmtPct(x) {
   return (x === null || x === undefined) ? "-" : `${(x * 100).toFixed(2)}%`;
 }
 
-function fmtNum(x, decimals = 2) {
-  return (x === null || x === undefined) ? "-" : Number(x).toFixed(decimals);
+function fmtNum(x, decimals = 2, currency = false) {
+  if (x === null || x === undefined) return "-";
+  const num = Number(x);
+  const formatted = num.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  return currency ? `$${formatted}` : formatted;
 }
 
 // Threshold below which a surprise counts as "in line" rather than beat/miss.
@@ -292,8 +295,8 @@ function renderDetail(item) {
     statRow("Whisper number", fmtNum(item.whisper)),
     statRow("Earnings surprise", fmtPct(item.earningsSurprise)),
     statRow("Earnings growth (YoY)", fmtPct(item.earningsGrowth)),
-    statRow("Revenue (actual, $M)", fmtNum(item.revenue, 3)),
-    statRow("Revenue estimate ($M)", fmtNum(item.revenueEstimate, 3)),
+    statRow("Revenue (actual, $M)", fmtNum(item.revenue, 3, true)),
+    statRow("Revenue estimate ($M)", fmtNum(item.revenueEstimate, 3, true)),
     statRow("Revenue surprise", fmtPct(item.revenueSurprise)),
     statRow("Revenue growth (YoY)", fmtPct(item.revenueGrowth)),
     statRow("Quarter", item.quarter ?? "-"),
