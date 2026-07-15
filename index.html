@@ -211,8 +211,23 @@
   }
   .nav-empty { padding: 8px 12px; color: var(--color-mid-gray); font-size: 13px; }
 
-
-
+  .search-container {
+    margin-top: 24px;
+  }
+  #searchInput {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 16px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 8px;
+    font-family: var(--font-geist);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #searchInput:focus {
+    border-color: var(--color-ink);
+  }
 
 </style>
 </head>
@@ -221,7 +236,9 @@
 <header>
   <h1>Earnings News Archive</h1>
   <p>Daily snapshots pulled from Earnings Whispers</p>
-
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search by ticker or name..." />
+  </div>
 </header>
 
 <div class="layout">
@@ -233,6 +250,7 @@
 
 <script>
 const DATA_DIR = "data";
+let currentItems = [];
 
 async function loadManifest() {
   const res = await fetch(`${DATA_DIR}/manifest.json`, { cache: "no-store" });
@@ -380,13 +398,31 @@ async function selectDate(date, btn) {
   const content = document.getElementById("content");
   content.innerHTML = `<div class="empty">Loading ${date}…</div>`;
   try {
-    const items = await loadDay(date);
-    content.innerHTML = renderTable(items);
-    attachRowToggles();
+    currentItems = await loadDay(date);
+    renderCurrentItems();
   } catch (e) {
     content.innerHTML = `<div class="empty">Failed to load ${date}: ${e.message}</div>`;
+    currentItems = [];
   }
 }
+
+function renderCurrentItems() {
+  const content = document.getElementById("content");
+  const query = document.getElementById("searchInput").value.toLowerCase();
+  
+  let filtered = currentItems;
+  if (query) {
+    filtered = currentItems.filter(item => 
+      (item.ticker && item.ticker.toLowerCase().includes(query)) ||
+      (item.name && item.name.toLowerCase().includes(query))
+    );
+  }
+  
+  content.innerHTML = renderTable(filtered);
+  attachRowToggles();
+}
+
+document.getElementById("searchInput").addEventListener("input", renderCurrentItems);
 
 async function init() {
   const nav = document.getElementById("dateNav");
