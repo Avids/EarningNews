@@ -45,7 +45,19 @@ def save_news(items: list[dict]) -> Path:
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     out_path = OUTPUT_DIR / f"earnings_news_{today}.json"
     out_path.write_text(json.dumps(items, indent=2))
+    update_manifest(today)
     return out_path
+
+
+def update_manifest(today: str) -> None:
+    """Maintain data/manifest.json — a sorted list of dates with data,
+    so index.html knows what files exist (GitHub Pages has no directory listing)."""
+    manifest_path = OUTPUT_DIR / "manifest.json"
+    dates = set()
+    if manifest_path.exists():
+        dates = set(json.loads(manifest_path.read_text()))
+    dates.add(today)
+    manifest_path.write_text(json.dumps(sorted(dates, reverse=True), indent=2))
 
 
 def main() -> int:
