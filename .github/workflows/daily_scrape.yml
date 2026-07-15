@@ -2,7 +2,7 @@ name: Daily Earnings News Scrape
 
 on:
   schedule:
-    # 22:00 UTC = 6:00 PM EST (standard time). During EDT (Mar-Nov) this
+    # 22:00 UTC = 5:00 PM EST (standard time). During EDT (Mar-Nov) this
     # runs at 7:00 PM instead — GitHub Actions cron is always UTC and does
     # not shift for daylight saving. Adjust to "0 22 * * *" if you want it
     # pinned to 6:00 PM EDT during summer instead.
