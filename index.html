@@ -16,6 +16,8 @@
     --color-mid-gray: #737373;
     --color-hairline: #e5e5e5;
     --color-ember: #e7000b;
+    --color-success: #22c55e;
+    --color-error: #ef4444;
     --font-geist: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --shadow-subtle: 0 0 0 1px rgba(23,23,23,0.05), 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
   }
@@ -118,8 +120,8 @@
 
   .badge {
     display: inline-block;
-    background: var(--color-ink-soft);
-    color: #fafafa;
+    background: var(--color-success);
+    color: #ffffff;
     border-radius: 18px;
     padding: 2px 8px;
     font-size: 12px;
@@ -127,13 +129,13 @@
   }
   .badge-outline {
     display: inline-block;
-    background: transparent;
-    color: var(--color-ink);
-    border: 1px solid var(--color-hairline);
+    background: var(--color-error);
+    color: #ffffff;
     border-radius: 18px;
-    padding: 1px 7px;
+    padding: 2px 8px;
     font-size: 12px;
     font-weight: 500;
+    border: none;
   }
   .badge-soft {
     display: inline-block;
