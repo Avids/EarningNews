@@ -209,6 +209,28 @@
   #copyScreenshotBtn:hover { background: var(--color-ink-soft); }
   #copyScreenshotBtn:active { opacity: 0.8; }
 
+  .screenshot-wrapper {
+    background: white;
+    padding: 24px;
+  }
+  .screenshot-header {
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--color-hairline);
+    padding-bottom: 16px;
+  }
+  .screenshot-header h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .screenshot-header p {
+    margin: 0;
+    color: var(--color-mid-gray);
+    font-size: 14px;
+  }
+
+
 </style>
 </head>
 <body>
@@ -418,13 +440,32 @@ async function copyScreenshot() {
   btn.disabled = true;
   
   try {
+    // Get the currently selected date from the active nav button
+    const activeBtn = document.querySelector("#dateNav button.active");
+    const selectedDate = activeBtn ? activeBtn.textContent : new Date().toISOString().split('T')[0];
+    
+    // Create wrapper with header
+    const wrapper = document.createElement("div");
+    wrapper.className = "screenshot-wrapper";
+    wrapper.innerHTML = `
+      <div class="screenshot-header">
+        <h2>Earnings Reports</h2>
+        <p>Data as of ${selectedDate}</p>
+      </div>
+      ${contentDiv.innerHTML}
+    `;
+    
+    document.body.appendChild(wrapper);
+    
     const { html2canvas } = await import("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm");
-    const canvas = await html2canvas(contentDiv, {
+    const canvas = await html2canvas(wrapper, {
       scale: 2,
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff"
     });
+    
+    document.body.removeChild(wrapper);
     
     canvas.toBlob(async (blob) => {
       try {
