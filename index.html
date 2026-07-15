@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earnings News Archive</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2e38;
+    --text: #e6e8eb;
+    --muted: #9aa1ac;
+    --accent: #4f8cff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0 0 0.25rem; font-size: 1.4rem; }
+  header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .layout {
+    display: flex;
+    min-height: calc(100vh - 90px);
+  }
+  nav {
+    width: 220px;
+    border-right: 1px solid var(--border);
+    padding: 1rem 0;
+    overflow-y: auto;
+  }
+  nav button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.6rem 1.25rem;
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  nav button:hover { background: var(--panel); }
+  nav button.active { background: var(--panel); color: var(--accent); font-weight: 600; }
+  main {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    overflow-y: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--muted); font-weight: 600; }
+  tr:hover { background: var(--panel); }
+  .ticker { font-weight: 600; color: var(--accent); }
+  .muted { color: var(--muted); }
+  .empty { color: var(--muted); padding: 2rem 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Earnings News Archive</h1>
+  <p>Daily snapshots pulled from Earnings Whispers</p>
+</header>
+
+<div class="layout">
+  <nav id="dateNav"><div class="muted" style="padding: 0.6rem 1.25rem;">Loading dates…</div></nav>
+  <main id="content"><div class="empty">Select a date</div></main>
+</div>
+
+<script>
+const DATA_DIR = "data";
+
+async function loadManifest() {
+  const res = await fetch(`${DATA_DIR}/manifest.json`, { cache: "no-store" });
+  if (!res.ok) throw new Error("manifest.json not found");
+  return res.json();
+}
+
+async function loadDay(date) {
+  const res = await fetch(`${DATA_DIR}/earnings_news_${date}.json`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`No data for ${date}`);
+  return res.json();
+}
+
+function renderTable(items) {
+  if (!items.length) {
+    return `<div class="empty">No items for this date.</div>`;
+  }
+  const rows = items.map(item => `
+    <tr>
+      <td class="ticker">${item.ticker ?? "-"}</td>
+      <td>${item.name ?? "-"}</td>
+      <td class="muted">${item.epsDate ?? "-"}</td>
+    </tr>
+  `).join("");
+  return `
+    <table>
+      <thead><tr><th>Ticker</th><th>Name</th><th>Reported</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+async function selectDate(date, btn) {
+  document.querySelectorAll("#dateNav button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  const content = document.getElementById("content");
+  content.innerHTML = `<div class="empty">Loading ${date}…</div>`;
+  try {
+    const items = await loadDay(date);
+    content.innerHTML = renderTable(items);
+  } catch (e) {
+    content.innerHTML = `<div class="empty">Failed to load ${date}: ${e.message}</div>`;
+  }
+}
+
+async function init() {
+  const nav = document.getElementById("dateNav");
+  try {
+    const dates = await loadManifest();
+    if (!dates.length) {
+      nav.innerHTML = `<div class="muted" style="padding: 0.6rem 1.25rem;">No data yet</div>`;
+      return;
+    }
+    nav.innerHTML = "";
+    dates.forEach((date, i) => {
+      const btn = document.createElement("button");
+      btn.textContent = date;
+      btn.onclick = () => selectDate(date, btn);
+      nav.appendChild(btn);
+      if (i === 0) selectDate(date, btn);
+    });
+  } catch (e) {
+    nav.innerHTML = `<div class="muted" style="padding: 0.6rem 1.25rem;">Failed to load manifest: ${e.message}</div>`;
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>
