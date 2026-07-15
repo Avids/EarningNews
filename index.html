@@ -320,15 +320,17 @@ function renderTable(items) {
       <td><span class="badge">${item.ticker ?? "-"}</span></td>
       <td class="name">${item.name ?? "-"}</td>
       <td>${surpriseCell(item)}</td>
-      <td class="muted">${item.epsDate ?? "-"}</td>
+      <td>${fmtNum(item.eps)}</td>
+      <td>${fmtPct(item.earningsGrowth)}</td>
+      <td>${fmtPct(item.revenueGrowth)}</td>
     </tr>
     <tr class="row-summary" id="summary-${i}" style="display: none;">
-      <td colspan="4">${renderDetail(item)}</td>
+      <td colspan="6">${renderDetail(item)}</td>
     </tr>
   `).join("");
   return `
     <table>
-      <thead><tr><th>Ticker</th><th>Name</th><th>Surprise / Guidance</th><th>Reported</th></tr></thead>
+      <thead><tr><th>Ticker</th><th>Name</th><th>Surprise / Guidance</th><th>EPS (actual)</th><th>Earnings growth (YoY)</th><th>Revenue growth (YoY)</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
