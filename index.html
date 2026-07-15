@@ -16,10 +16,10 @@
     --color-mid-gray: #737373;
     --color-hairline: #e5e5e5;
     --color-ember: #e7000b;
-    --color-success: #22c55e;
-    --color-error: #ef4444;
+    --color-success: #10b981;
+    --color-error: #f43f5e;
     --font-geist: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --shadow-subtle: 0 0 0 1px rgba(23,23,23,0.05), 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+    --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
   * { box-sizing: border-box; }
@@ -134,8 +134,8 @@
     border-bottom: 1px solid var(--color-hairline);
     vertical-align: top;
   }
-  tr.row-main { cursor: pointer; }
-  tr.row-main:hover td { background: var(--color-surface-alt); }
+  tr.row-main { cursor: pointer; transition: background-color 0.2s ease; }
+  tr.row-main:hover td { background-color: var(--color-surface-alt); }
   tr:last-child td { border-bottom: none; }
 
   .badge {
