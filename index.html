@@ -368,14 +368,15 @@ function renderTable(items) {
       <td class="num-cell">${fmtNum(item.revenue, 3, true)}</td>
       <td class="num-cell">${fmtPct(item.earningsGrowth)}</td>
       <td class="num-cell">${fmtPct(item.revenueGrowth)}</td>
+      <td>${item.quarter ?? "-"}</td>
     </tr>
     <tr class="row-summary" id="summary-${i}" style="display: none;">
-      <td colspan="7">${renderDetail(item)}</td>
+      <td colspan="8">${renderDetail(item)}</td>
     </tr>
   `).join("");
   return `
     <table>
-      <thead><tr><th>Ticker</th><th>Name</th><th>Surprise / Guidance</th><th class="num-cell">EPS (reported)</th><th class="num-cell">Revenue (reported, $M)</th><th class="num-cell">Earnings growth (YoY)</th><th class="num-cell">Revenue growth (YoY)</th></tr></thead>
+      <thead><tr><th>Ticker</th><th>Name</th><th>Surprise / Guidance</th><th class="num-cell">EPS (reported)</th><th class="num-cell">Revenue (reported, $M)</th><th class="num-cell">Earnings growth (YoY)</th><th class="num-cell">Revenue growth (YoY)</th><th>Quarter</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
