@@ -66,6 +66,15 @@
   }
   th { color: var(--muted); font-weight: 600; }
   tr:hover { background: var(--panel); }
+  .row-main { cursor: pointer; }
+  .row-summary td { background: #10131a; }
+  .summary {
+    padding: 1rem 1.5rem;
+    white-space: normal;
+    line-height: 1.5;
+    color: var(--text);
+    font-size: 0.88rem;
+  }
   .ticker { font-weight: 600; color: var(--accent); }
   .muted { color: var(--muted); }
   .empty { color: var(--muted); padding: 2rem 0; }
@@ -98,15 +107,30 @@ async function loadDay(date) {
   return res.json();
 }
 
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function formatSummary(summary) {
+  if (!summary) return "";
+  // Escape everything, then restore just <br> line breaks from the source.
+  return escapeHtml(summary).replace(/&lt;br\s*\/?&gt;/gi, "<br>");
+}
+
 function renderTable(items) {
   if (!items.length) {
     return `<div class="empty">No items for this date.</div>`;
   }
-  const rows = items.map(item => `
-    <tr>
+  const rows = items.map((item, i) => `
+    <tr class="row-main" data-idx="${i}">
       <td class="ticker">${item.ticker ?? "-"}</td>
       <td>${item.name ?? "-"}</td>
       <td class="muted">${item.epsDate ?? "-"}</td>
+    </tr>
+    <tr class="row-summary" id="summary-${i}" style="display: none;">
+      <td colspan="3" class="summary">${formatSummary(item.summary)}</td>
     </tr>
   `).join("");
   return `
@@ -117,6 +141,17 @@ function renderTable(items) {
   `;
 }
 
+function attachRowToggles() {
+  document.querySelectorAll(".row-main").forEach(row => {
+    row.addEventListener("click", () => {
+      const summaryRow = document.getElementById(`summary-${row.dataset.idx}`);
+      if (summaryRow) {
+        summaryRow.style.display = summaryRow.style.display === "none" ? "table-row" : "none";
+      }
+    });
+  });
+}
+
 async function selectDate(date, btn) {
   document.querySelectorAll("#dateNav button").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
@@ -125,6 +160,7 @@ async function selectDate(date, btn) {
   try {
     const items = await loadDay(date);
     content.innerHTML = renderTable(items);
+    attachRowToggles();
   } catch (e) {
     content.innerHTML = `<div class="empty">Failed to load ${date}: ${e.message}</div>`;
   }
