@@ -38,6 +38,7 @@
     max-width: 1280px;
     margin: 0 auto;
     padding: 48px 24px 24px;
+    position: relative;
   }
   header h1 {
     margin: 0 0 8px;
@@ -189,6 +190,25 @@
     font-size: 14px;
   }
   .nav-empty { padding: 8px 12px; color: var(--color-mid-gray); font-size: 13px; }
+
+  #copyScreenshotBtn {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    padding: 8px 16px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-geist);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  #copyScreenshotBtn:hover { background: var(--color-ink-soft); }
+  #copyScreenshotBtn:active { opacity: 0.8; }
+
 </style>
 </head>
 <body>
@@ -196,6 +216,7 @@
 <header>
   <h1>Earnings News Archive</h1>
   <p>Daily snapshots pulled from Earnings Whispers</p>
+  <button id="copyScreenshotBtn">📋 Copy Screenshot</button>
 </header>
 
 <div class="layout">
@@ -383,6 +404,54 @@ async function init() {
 }
 
 init();
+
+async function copyScreenshot() {
+  const contentDiv = document.getElementById("content");
+  if (!contentDiv.querySelector("table")) {
+    alert("No data to screenshot. Please select a date.");
+    return;
+  }
+  
+  const btn = document.getElementById("copyScreenshotBtn");
+  const originalText = btn.textContent;
+  btn.textContent = "📊 Capturing...";
+  btn.disabled = true;
+  
+  try {
+    const { html2canvas } = await import("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm");
+    const canvas = await html2canvas(contentDiv, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff"
+    });
+    
+    canvas.toBlob(async (blob) => {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ "image/png": blob })
+        ]);
+        btn.textContent = "✓ Copied!";
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }, 2000);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+        alert("Failed to copy to clipboard");
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    });
+  } catch (err) {
+    console.error("Screenshot failed:", err);
+    alert("Failed to capture screenshot");
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("copyScreenshotBtn").addEventListener("click", copyScreenshot);
 </script>
 
 </body>
