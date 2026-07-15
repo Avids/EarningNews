@@ -68,8 +68,20 @@
   tr:hover { background: var(--panel); }
   .row-main { cursor: pointer; }
   .row-summary td { background: #10131a; }
-  .summary {
-    padding: 1rem 1.5rem;
+  .summary { padding: 1rem 1.5rem; }
+  .subject { font-weight: 600; margin-bottom: 0.75rem; font-size: 0.95rem; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.4rem 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat { display: flex; justify-content: space-between; font-size: 0.85rem; }
+  .stat-label { color: var(--muted); }
+  .stat-value { font-weight: 600; }
+  .summary-text {
     white-space: normal;
     line-height: 1.5;
     color: var(--text);
@@ -119,6 +131,43 @@ function formatSummary(summary) {
   return escapeHtml(summary).replace(/&lt;br\s*\/?&gt;/gi, "<br>");
 }
 
+function fmtPct(x) {
+  return (x === null || x === undefined) ? "-" : `${(x * 100).toFixed(2)}%`;
+}
+
+function fmtNum(x, decimals = 2) {
+  return (x === null || x === undefined) ? "-" : Number(x).toFixed(decimals);
+}
+
+function statRow(label, value) {
+  if (value === "-" ) return "";
+  return `<div class="stat"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
+}
+
+function renderDetail(item) {
+  const stats = [
+    statRow("EPS (actual)", fmtNum(item.eps)),
+    statRow("EPS estimate", fmtNum(item.estimate)),
+    statRow("EPS range", (item.lowEstimate != null && item.highEstimate != null) ? `${fmtNum(item.lowEstimate)} – ${fmtNum(item.highEstimate)}` : "-"),
+    statRow("Whisper number", fmtNum(item.whisper)),
+    statRow("Earnings surprise", fmtPct(item.earningsSurprise)),
+    statRow("Earnings growth (YoY)", fmtPct(item.earningsGrowth)),
+    statRow("Revenue (actual, $M)", fmtNum(item.revenue, 3)),
+    statRow("Revenue estimate ($M)", fmtNum(item.revenueEstimate, 3)),
+    statRow("Revenue surprise", fmtPct(item.revenueSurprise)),
+    statRow("Revenue growth (YoY)", fmtPct(item.revenueGrowth)),
+    statRow("Quarter", item.quarter ?? "-"),
+    statRow("EW Grade", item.ewGrade ?? "-"),
+    statRow("Power Rating", item.pwrRating ?? "-"),
+  ].join("");
+
+  return `
+    <div class="subject">${item.subject ?? ""}</div>
+    <div class="stats-grid">${stats}</div>
+    <div class="summary-text">${formatSummary(item.summary)}</div>
+  `;
+}
+
 function renderTable(items) {
   if (!items.length) {
     return `<div class="empty">No items for this date.</div>`;
@@ -130,7 +179,7 @@ function renderTable(items) {
       <td class="muted">${item.epsDate ?? "-"}</td>
     </tr>
     <tr class="row-summary" id="summary-${i}" style="display: none;">
-      <td colspan="3" class="summary">${formatSummary(item.summary)}</td>
+      <td colspan="3" class="summary">${renderDetail(item)}</td>
     </tr>
   `).join("");
   return `
