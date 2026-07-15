@@ -137,6 +137,7 @@
   tr.row-main { cursor: pointer; transition: background-color 0.2s ease; }
   tr.row-main:hover td { background-color: var(--color-surface-alt); }
   tr:last-child td { border-bottom: none; }
+  th.num-cell, td.num-cell { text-align: right; }
 
   .badge {
     display: inline-block;
@@ -351,13 +352,13 @@ function statRow(label, value) {
 
 function renderDetail(item) {
   const stats = [
-    statRow("EPS (actual)", fmtNum(item.eps)),
+    statRow("EPS (reported)", fmtNum(item.eps)),
     statRow("EPS estimate", fmtNum(item.estimate)),
     statRow("EPS range", (item.lowEstimate != null && item.highEstimate != null) ? `${fmtNum(item.lowEstimate)} – ${fmtNum(item.highEstimate)}` : "-"),
     statRow("Whisper number", fmtNum(item.whisper)),
     statRow("Earnings surprise", fmtPct(item.earningsSurprise)),
     statRow("Earnings growth (YoY)", fmtPct(item.earningsGrowth)),
-    statRow("Revenue (actual, $M)", fmtNum(item.revenue, 3, true)),
+    statRow("Revenue (reported, $M)", fmtNum(item.revenue, 3, true)),
     statRow("Revenue estimate ($M)", fmtNum(item.revenueEstimate, 3, true)),
     statRow("Revenue surprise", fmtPct(item.revenueSurprise)),
     statRow("Revenue growth (YoY)", fmtPct(item.revenueGrowth)),
@@ -382,17 +383,18 @@ function renderTable(items) {
       <td><span class="badge">${item.ticker ?? "-"}</span></td>
       <td class="name">${item.name ?? "-"}</td>
       <td>${surpriseCell(item)}</td>
-      <td>${fmtNum(item.eps)}</td>
-      <td>${fmtPct(item.earningsGrowth)}</td>
-      <td>${fmtPct(item.revenueGrowth)}</td>
+      <td class="num-cell">${fmtNum(item.eps)}</td>
+      <td class="num-cell">${fmtNum(item.revenue, 3, true)}</td>
+      <td class="num-cell">${fmtPct(item.earningsGrowth)}</td>
+      <td class="num-cell">${fmtPct(item.revenueGrowth)}</td>
     </tr>
     <tr class="row-summary" id="summary-${i}" style="display: none;">
-      <td colspan="6">${renderDetail(item)}</td>
+      <td colspan="7">${renderDetail(item)}</td>
     </tr>
   `).join("");
   return `
     <table>
-      <thead><tr><th>Ticker</th><th>Name</th><th>Surprise / Guidance</th><th>EPS (actual)</th><th>Earnings growth (YoY)</th><th>Revenue growth (YoY)</th></tr></thead>
+      <thead><tr><th>Ticker</th><th>Name</th><th>Surprise / Guidance</th><th class="num-cell">EPS (reported)</th><th class="num-cell">Revenue (reported, $M)</th><th class="num-cell">Earnings growth (YoY)</th><th class="num-cell">Revenue growth (YoY)</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
