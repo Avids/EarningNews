@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Earnings News Archive</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   @import url('https://fonts.cdnfonts.com/css/geist-sans');
 
@@ -229,6 +230,25 @@
     border-color: var(--color-ink);
   }
 
+  #copyBtn {
+    padding: 10px 16px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 8px;
+    font-family: var(--font-geist);
+    font-size: 14px;
+    background: var(--color-paper);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  #copyBtn:hover {
+    background: var(--color-ink);
+    color: var(--color-surface-alt);
+    border-color: var(--color-ink);
+  }
 </style>
 </head>
 <body>
@@ -236,8 +256,12 @@
 <header>
   <h1>Earnings News Archive</h1>
   <p>Daily snapshots pulled from Earnings Whispers</p>
-  <div class="search-container">
+  <div class="search-container" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <input type="text" id="searchInput" placeholder="Search by ticker or name..." />
+    <button id="copyBtn" onclick="copyScreenshot()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+      Copy Screenshot
+    </button>
   </div>
 </header>
 
@@ -467,6 +491,80 @@ init();
 setInterval(() => {
   init();
 }, 5 * 60 * 1000);
+
+async function copyScreenshot() {
+  const contentCard = document.getElementById("content");
+  const copyBtn = document.getElementById("copyBtn");
+  
+  // Visual feedback
+  const originalText = copyBtn.innerHTML;
+  copyBtn.disabled = true;
+  copyBtn.innerHTML = "Capturing...";
+
+  // Create a temporary container so we don't mess up the layout style of the original card
+  const tempHeader = document.createElement("div");
+  tempHeader.style.paddingBottom = "16px";
+  tempHeader.style.marginBottom = "16px";
+  tempHeader.style.borderBottom = "1px solid var(--color-hairline)";
+  tempHeader.style.fontFamily = "var(--font-geist)";
+  tempHeader.style.textAlign = "center";
+  
+  const title = document.createElement("div");
+  title.textContent = "Earning Reports";
+  title.style.fontSize = "20px";
+  title.style.fontWeight = "600";
+  title.style.color = "var(--color-ink)";
+  title.style.letterSpacing = "-0.5px";
+  
+  const dateSub = document.createElement("div");
+  dateSub.textContent = activeDateStr || "";
+  dateSub.style.fontSize = "13px";
+  dateSub.style.color = "var(--color-mid-gray)";
+  dateSub.style.marginTop = "4px";
+  
+  tempHeader.appendChild(title);
+  tempHeader.appendChild(dateSub);
+  
+  // Prepend to card
+  contentCard.insertBefore(tempHeader, contentCard.firstChild);
+  
+  try {
+    const canvas = await html2canvas(contentCard, {
+      backgroundColor: "#ffffff",
+      logging: false,
+      useCORS: true,
+      scale: 2 // Higher quality screenshot
+    });
+    
+    canvas.toBlob(async (blob) => {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ "image/png": blob })
+        ]);
+        copyBtn.innerHTML = "Copied!";
+        setTimeout(() => {
+          copyBtn.disabled = false;
+          copyBtn.innerHTML = originalText;
+        }, 2000);
+      } catch (err) {
+        console.error("Clipboard write failed", err);
+        alert("Clipboard access denied. Please try again or check browser permissions.");
+        copyBtn.disabled = false;
+        copyBtn.innerHTML = originalText;
+      }
+    }, "image/png");
+  } catch (err) {
+    console.error("Screenshot capture failed", err);
+    alert("Failed to capture screenshot.");
+    copyBtn.disabled = false;
+    copyBtn.innerHTML = originalText;
+  } finally {
+    // Clean up temporary header
+    if (tempHeader.parentNode === contentCard) {
+      contentCard.removeChild(tempHeader);
+    }
+  }
+}
 
 </script>
 
