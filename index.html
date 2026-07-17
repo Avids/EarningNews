@@ -253,13 +253,13 @@ const DATA_DIR = "data";
 let currentItems = [];
 
 async function loadManifest() {
-  const res = await fetch(`${DATA_DIR}/manifest.json`, { cache: "no-store" });
+  const res = await fetch(`${DATA_DIR}/manifest.json?_t=${Date.now()}`, { cache: "no-store" });
   if (!res.ok) throw new Error("manifest.json not found");
   return res.json();
 }
 
 async function loadDay(date) {
-  const res = await fetch(`${DATA_DIR}/earnings_news_${date}.json`, { cache: "no-store" });
+  const res = await fetch(`${DATA_DIR}/earnings_news_${date}.json?_t=${Date.now()}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`No data for ${date}`);
   return res.json();
 }
@@ -393,9 +393,12 @@ function attachRowToggles() {
   });
 }
 
+let activeDateStr = null;
+
 async function selectDate(date, btn) {
+  activeDateStr = date;
   document.querySelectorAll("#dateNav button").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn) btn.classList.add("active");
   const content = document.getElementById("content");
   content.innerHTML = `<div class="empty">Loading ${date}…</div>`;
   try {
@@ -439,14 +442,31 @@ async function init() {
       btn.textContent = date;
       btn.onclick = () => selectDate(date, btn);
       nav.appendChild(btn);
-      if (i === 0) selectDate(date, btn);
+      if (activeDateStr === date) {
+        btn.classList.add("active");
+      }
     });
+    
+    if (!activeDateStr && dates.length > 0) {
+      // First load, select the most recent date
+      const firstBtn = nav.querySelector("button");
+      selectDate(dates[0], firstBtn);
+    } else if (activeDateStr && dates.includes(activeDateStr)) {
+      // Reload current date data to ensure it's fresh
+      selectDate(activeDateStr, Array.from(nav.querySelectorAll("button")).find(b => b.textContent === activeDateStr));
+    }
   } catch (e) {
     nav.innerHTML = `<div class="nav-empty">Failed to load manifest: ${e.message}</div>`;
   }
 }
 
+// Initialize on page load
 init();
+
+// Auto-refresh every 5 minutes to fetch new data automatically
+setInterval(() => {
+  init();
+}, 5 * 60 * 1000);
 
 </script>
 
