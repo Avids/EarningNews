@@ -310,6 +310,19 @@ function fmtNum(x, decimals = 2, currency = false) {
   return currency ? `$${formatted}` : formatted;
 }
 
+function calculateSurprise(actual, estimate) {
+  if (actual === null || actual === undefined || estimate === null || estimate === undefined) {
+    return null;
+  }
+  const act = Number(actual);
+  const est = Number(estimate);
+  if (isNaN(act) || isNaN(est)) return null;
+  if (est === 0) {
+    return act > 0 ? 1 : (act < 0 ? -1 : 0);
+  }
+  return (act - est) / Math.abs(est);
+}
+
 // Threshold below which a surprise counts as "in line" rather than beat/miss.
 const INLINE_THRESHOLD = 0.005; // 0.5%
 
@@ -342,9 +355,12 @@ function guidanceBadge(item) {
 }
 
 function surpriseCell(item) {
+  const epsSurprise = calculateSurprise(item.eps, item.estimate);
+  const revSurprise = calculateSurprise(item.revenue, item.revenueEstimate);
+
   const parts = [
-    surpriseBadge("EPS", item.earningsSurprise),
-    surpriseBadge("Rev", item.revenueSurprise),
+    surpriseBadge("EPS", epsSurprise),
+    surpriseBadge("Rev", revSurprise),
     guidanceBadge(item),
   ].filter(Boolean);
   return parts.length ? `<div class="surprise-cell">${parts.join("")}</div>` : `<span class="muted">-</span>`;
@@ -356,16 +372,19 @@ function statRow(label, value) {
 }
 
 function renderDetail(item) {
+  const epsSurprise = calculateSurprise(item.eps, item.estimate);
+  const revSurprise = calculateSurprise(item.revenue, item.revenueEstimate);
+
   const stats = [
     statRow("EPS (reported)", fmtNum(item.eps)),
     statRow("EPS estimate", fmtNum(item.estimate)),
     statRow("EPS range", (item.lowEstimate != null && item.highEstimate != null) ? `${fmtNum(item.lowEstimate)} – ${fmtNum(item.highEstimate)}` : "-"),
     statRow("Whisper number", fmtNum(item.whisper)),
-    statRow("Earnings surprise", fmtPct(item.earningsSurprise)),
+    statRow("Earnings surprise", fmtPct(epsSurprise)),
     statRow("Earnings growth (YoY)", fmtPct(item.earningsGrowth)),
     statRow("Revenue (reported, $M)", fmtNum(item.revenue, 3, true)),
     statRow("Revenue estimate ($M)", fmtNum(item.revenueEstimate, 3, true)),
-    statRow("Revenue surprise", fmtPct(item.revenueSurprise)),
+    statRow("Revenue surprise", fmtPct(revSurprise)),
     statRow("Revenue growth (YoY)", fmtPct(item.revenueGrowth)),
     statRow("Quarter", item.quarter ?? "-"),
     statRow("EW Grade", item.ewGrade ?? "-"),
