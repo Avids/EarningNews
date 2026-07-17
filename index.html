@@ -195,9 +195,10 @@
     padding-bottom: 16px;
     border-bottom: 1px solid var(--color-hairline);
   }
-  .stat { display: flex; justify-content: space-between; font-size: 13px; }
+  .stat { display: flex; justify-content: space-between; font-size: 13px; gap: 12px; }
   .stat-label { color: var(--color-mid-gray); }
   .stat-value { font-weight: 600; color: var(--color-ink); }
+  .stat-long { grid-column: span 2; }
   .summary-text {
     font-size: 14px;
     line-height: 1.5;
@@ -366,9 +367,10 @@ function surpriseCell(item) {
   return parts.length ? `<div class="surprise-cell">${parts.join("")}</div>` : `<span class="muted">-</span>`;
 }
 
-function statRow(label, value) {
+function statRow(label, value, isLong = false) {
   if (value === "-") return "";
-  return `<div class="stat"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
+  const cls = isLong ? " stat-long" : "";
+  return `<div class="stat${cls}"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
 }
 
 function renderDetail(item) {
@@ -386,7 +388,7 @@ function renderDetail(item) {
     statRow("Revenue estimate ($M)", fmtNum(item.revenueEstimate, 3, true)),
     statRow("Revenue surprise", fmtPct(revSurprise)),
     statRow("Revenue growth (YoY)", fmtPct(item.revenueGrowth)),
-    statRow("Quarter", item.quarter ?? "-"),
+    statRow("Quarter", item.quarter ?? "-", true),
     statRow("EW Grade", item.ewGrade ?? "-"),
     statRow("Power Rating", item.pwrRating ?? "-"),
   ].join("");
