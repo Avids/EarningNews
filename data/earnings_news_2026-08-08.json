@@ -1,0 +1,29 @@
+[
+  {
+    "epsDate": "2026-08-08T08:00:00",
+    "ticker": "BRK.B",
+    "name": "Berkshire Hathaway, Inc.",
+    "summary": "Berkshire Hathaway (BRK.B) reported earnings of $6.02 per share on revenue of $101.81 billion for the .  The consensus earnings estimate was $5.24 per share. The company beat consensus estimates by 14.89% while revenue grew 10.04% on a year-over-year basis.<br /><br />Berkshire Hathaway and its subsidiaries engage in diverse business activities including insurance and reinsurance, utilities and energy, freight rail transportation, manufacturing, retailing and services. ",
+    "subject": "Berkshire Hathaway Beat Consensus Estimates",
+    "quarter": "",
+    "fileName": "2608084021",
+    "eps": 6.02,
+    "ewGrade": null,
+    "pwrRating": null,
+    "estimate": 5.24,
+    "whisper": 999,
+    "highEstimate": null,
+    "lowEstimate": null,
+    "revenue": 101808.0,
+    "revenueEstimate": null,
+    "earningsGrowth": 0.1644100580270793,
+    "revenueGrowth": 0.10044857590660974,
+    "earningsSurprise": 0.14885496183206107,
+    "revenueSurprise": null,
+    "prevEarningsGrowth": null,
+    "prevRevenueGrowth": 0.04402340484814712,
+    "q1Ref": null,
+    "fY1Ref": null,
+    "status": null
+  }
+]
