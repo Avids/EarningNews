@@ -1,0 +1,29 @@
+[
+  {
+    "epsDate": "2026-08-15T11:52:00",
+    "ticker": "HIVE",
+    "name": "HIVE Digital Technologies Ltd.",
+    "summary": "HIVE Digital Technologies (HIVE) reported a loss of $0.19 per share on revenue of $79.12 million for the  fiscal first quarter ended June 2026.  The consensus estimate was a loss of $0.21 per share on  revenue of $80.06 million. The company beat consensus estimates by 9.52% while revenue grew 73.47% on a year-over-year basis.<br /><br />HIVE is a growth-oriented technology stock in the emergent blockchain industry. ",
+    "subject": "HIVE Digital Technologies Beat Consensus Estimates",
+    "quarter": " fiscal first quarter ended June 2026",
+    "fileName": "26081510_1",
+    "eps": -0.19,
+    "ewGrade": null,
+    "pwrRating": null,
+    "estimate": -0.21,
+    "whisper": 999,
+    "highEstimate": -0.2,
+    "lowEstimate": -0.21,
+    "revenue": 79.12,
+    "revenueEstimate": 80.06,
+    "earningsGrowth": -2.1666666666666665,
+    "revenueGrowth": 0.7346692683782421,
+    "earningsSurprise": 0.09523809523809523,
+    "revenueSurprise": -0.011741194104421683,
+    "prevEarningsGrowth": null,
+    "prevRevenueGrowth": 1.3046757164404224,
+    "q1Ref": "202606",
+    "fY1Ref": "202703",
+    "status": null
+  }
+]
