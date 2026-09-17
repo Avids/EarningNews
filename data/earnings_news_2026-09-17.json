@@ -1,0 +1,29 @@
+[
+  {
+    "epsDate": "2026-09-17T01:00:00",
+    "ticker": "IPHA",
+    "name": "Innate Pharma S.A.",
+    "summary": "Innate Pharma S.A. (IPHA) reported a loss of $0.24 per share on  for the  second quarter ended June 2026. .<br /><br /> Innate Pharma S.A. is a commercial stage oncology-focused biotech company. It discovers and develops therapeutic antibodies for the treatment of cancer. The company's commercial-stage product includes Lumoxiti. Innate Pharma S.A. is based in Marseille, France.   \n",
+    "subject": "Innate Pharma S.A. Reported Earnings",
+    "quarter": " second quarter ended June 2026",
+    "fileName": "2609178613",
+    "eps": -0.24,
+    "ewGrade": null,
+    "pwrRating": null,
+    "estimate": 999.0,
+    "whisper": 999,
+    "highEstimate": 999.0,
+    "lowEstimate": 999.0,
+    "revenue": null,
+    "revenueEstimate": 0.000999,
+    "earningsGrowth": null,
+    "revenueGrowth": null,
+    "earningsSurprise": null,
+    "revenueSurprise": null,
+    "prevEarningsGrowth": null,
+    "prevRevenueGrowth": null,
+    "q1Ref": "202606",
+    "fY1Ref": "202612",
+    "status": null
+  }
+]
