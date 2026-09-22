@@ -1,0 +1,29 @@
+[
+  {
+    "epsDate": "2026-09-21T16:05:00",
+    "ticker": "ABVX",
+    "name": "ABIVAX Soci\u00e9t\u00e9 Anonyme",
+    "summary": "ABIVAX Soci\u00e9t\u00e9 Anonyme (ABVX) reported a loss of $1.71 per share on revenue of $1.40 million for the  second quarter ended June 2026.  The consensus estimate was a loss of $1.08 per share on  revenue of $1.86 million. The company missed consensus estimates by 58.33%.<br /><br />Abivax is a clinical-stage biotechnology company focused on developing therapeutics that harness the body\u2019s natural regulatory mechanisms to stabilize the immune response in patients with chronic inflammatory diseases",
+    "subject": "ABIVAX Soci\u00e9t\u00e9 Anonyme Missed Consensus Estimates",
+    "quarter": " second quarter ended June 2026",
+    "fileName": "2609213892",
+    "eps": -1.71,
+    "ewGrade": null,
+    "pwrRating": null,
+    "estimate": -1.08,
+    "whisper": 999,
+    "highEstimate": -0.82,
+    "lowEstimate": -1.34,
+    "revenue": 1.396,
+    "revenueEstimate": 1.86,
+    "earningsGrowth": -0.9883720930232558,
+    "revenueGrowth": null,
+    "earningsSurprise": -0.5833333333333334,
+    "revenueSurprise": -0.24946236559139784,
+    "prevEarningsGrowth": null,
+    "prevRevenueGrowth": null,
+    "q1Ref": "202606",
+    "fY1Ref": "202612",
+    "status": null
+  }
+]
