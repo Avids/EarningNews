@@ -1,0 +1,29 @@
+[
+  {
+    "epsDate": "2026-10-12T16:05:00",
+    "ticker": "NRIX",
+    "name": "Nurix Therapeutics, Inc. ",
+    "summary": "Nurix Therapeutics, Inc. (NRIX) reported earnings of $4.73 per share on revenue of $673.06 million for the  fiscal third quarter ended August 2026.  The consensus estimate was a loss of $0.56 per share on  revenue of $139.32 million. The company beat consensus estimates by 944.64% while revenue grew 8,426.27% on a year-over-year basis.<br /><br />Nurix Therapeutics is a clinical stage biopharmaceutical company focused on the discovery, development and commercialization of small molecule and cell therapies based on the modulation of cellular protein levels as a novel treatment approach for cancer and other challenging diseases. ",
+    "subject": "Nurix Therapeutics, Inc. Beat Consensus Estimates",
+    "quarter": " fiscal third quarter ended August 2026",
+    "fileName": "2610123991",
+    "eps": 4.73,
+    "ewGrade": null,
+    "pwrRating": null,
+    "estimate": -0.56,
+    "whisper": 999,
+    "highEstimate": -0.27,
+    "lowEstimate": -0.75,
+    "revenue": 673.064,
+    "revenueEstimate": 139.32,
+    "earningsGrowth": 5.592233009708738,
+    "revenueGrowth": 84.26273118824423,
+    "earningsSurprise": 9.446428571428571,
+    "revenueSurprise": 3.8310651737008325,
+    "prevEarningsGrowth": -0.5576923076923077,
+    "prevRevenueGrowth": -0.7947385146177592,
+    "q1Ref": "202608",
+    "fY1Ref": "202611",
+    "status": null
+  }
+]
