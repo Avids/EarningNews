@@ -1,0 +1,29 @@
+[
+  {
+    "epsDate": "2026-11-08T16:01:00",
+    "ticker": "RDNT",
+    "name": "RadNet Inc.",
+    "summary": "RadNet (RDNT) reported earnings of $0.30 per share on  for the .  The consensus earnings estimate was $0.21 per share on  revenue of $637.56 million. The company beat consensus estimates by 42.86%.<br /><br />The company  said it expects  2026 revenue of $2.385 billion to $2.435 billion. The company's previous guidance was revenue of $2.325 billion to $2.375 billion, and the current consensus revenue estimate is $2.510 billion for the year ending December 31, 2026.<br /><br />RadNet Inc is a provider of freestanding, fixed-site outpatient\r\ndiagnostic imaging services in the United States. Its services include magnetic\r\nresonance imaging, computed tomography, positron emission tomography, nuclear\r\nmedicine, and among others.",
+    "subject": "RadNet Beat Consensus Estimates, Raises Guidance, but Remains Below Estimates",
+    "quarter": "",
+    "fileName": "2611082900",
+    "eps": 0.3,
+    "ewGrade": null,
+    "pwrRating": null,
+    "estimate": 0.21,
+    "whisper": 999,
+    "highEstimate": 0.28,
+    "lowEstimate": 0.17,
+    "revenue": null,
+    "revenueEstimate": 637.56,
+    "earningsGrowth": 0.5,
+    "revenueGrowth": null,
+    "earningsSurprise": 0.42857142857142855,
+    "revenueSurprise": null,
+    "prevEarningsGrowth": -0.06451612903225806,
+    "prevRevenueGrowth": 0.24986452040222387,
+    "q1Ref": null,
+    "fY1Ref": null,
+    "status": null
+  }
+]
