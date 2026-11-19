@@ -181,11 +181,42 @@
   .muted { color: var(--color-mid-gray); }
 
   .row-summary td { background: var(--color-surface-alt); border-radius: 10px; }
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
   .detail-subject {
     font-weight: 600;
     font-size: 16px;
-    margin-bottom: 16px;
     letter-spacing: -0.25px;
+  }
+  .ticker-copy-btn {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 8px;
+    font-family: var(--font-geist);
+    font-size: 12px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .ticker-copy-btn:hover {
+    background: var(--color-ink);
+    color: var(--color-surface-alt);
+    border-color: var(--color-ink);
+  }
+  .ticker-copy-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
   }
   .stats-grid {
     display: grid;
@@ -373,7 +404,7 @@ function statRow(label, value, isLong = false) {
   return `<div class="stat${cls}"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
 }
 
-function renderDetail(item) {
+function renderDetail(item, idx) {
   const epsSurprise = calculateSurprise(item.eps, item.estimate);
   const revSurprise = calculateSurprise(item.revenue, item.revenueEstimate);
 
@@ -394,7 +425,13 @@ function renderDetail(item) {
   ].join("");
 
   return `
-    <div class="detail-subject">${item.subject ?? ""}</div>
+    <div class="detail-header">
+      <div class="detail-subject">${item.subject ?? ""}</div>
+      <button class="ticker-copy-btn" data-html2canvas-ignore="true" onclick="copyTickerScreenshot(event, ${idx})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        Copy Screenshot
+      </button>
+    </div>
     <div class="stats-grid">${stats}</div>
     <div class="summary-text">${formatSummary(item.summary)}</div>
   `;
@@ -416,7 +453,7 @@ function renderTable(items) {
       <td>${item.quarter ?? "-"}</td>
     </tr>
     <tr class="row-summary" id="summary-${i}" style="display: none;">
-      <td colspan="8">${renderDetail(item)}</td>
+      <td colspan="8">${renderDetail(item, i)}</td>
     </tr>
   `).join("");
   return `
@@ -583,6 +620,88 @@ async function copyScreenshot() {
     // Clean up temporary header
     if (tempHeader.parentNode === contentCard) {
       contentCard.removeChild(tempHeader);
+    }
+  }
+}
+
+async function copyTickerScreenshot(event, idx) {
+  event.stopPropagation();
+  const btn = event.currentTarget;
+  const mainRow = document.querySelector(`.row-main[data-idx="${idx}"]`);
+  const summaryRow = document.getElementById(`summary-${idx}`);
+  if (!mainRow || !summaryRow) return;
+
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = "Capturing...";
+
+  const contentCard = document.getElementById("content");
+  const sourceTable = mainRow.closest("table");
+
+  const wrapper = document.createElement("div");
+  wrapper.style.position = "absolute";
+  wrapper.style.left = "-9999px";
+  wrapper.style.top = "0";
+  wrapper.style.width = `${Math.max(sourceTable ? sourceTable.offsetWidth + 40 : 0, contentCard.offsetWidth)}px`;
+  wrapper.style.background = "#ffffff";
+  wrapper.style.padding = "20px";
+  wrapper.style.fontFamily = "var(--font-geist)";
+
+  const table = document.createElement("table");
+  table.style.width = "100%";
+  table.style.borderCollapse = "collapse";
+
+  const thead = sourceTable ? sourceTable.querySelector("thead") : null;
+  if (thead) {
+    table.appendChild(thead.cloneNode(true));
+  }
+
+  const tbody = document.createElement("tbody");
+  const mainClone = mainRow.cloneNode(true);
+  mainClone.style.cursor = "default";
+  mainClone.querySelectorAll("td").forEach(td => {
+    td.style.backgroundColor = "#ffffff";
+  });
+
+  const summaryClone = summaryRow.cloneNode(true);
+  summaryClone.style.display = "table-row";
+  const btnClone = summaryClone.querySelector(".ticker-copy-btn");
+  if (btnClone) btnClone.remove();
+
+  tbody.appendChild(mainClone);
+  tbody.appendChild(summaryClone);
+  table.appendChild(tbody);
+  wrapper.appendChild(table);
+  document.body.appendChild(wrapper);
+
+  try {
+    const canvas = await html2canvas(wrapper, {
+      backgroundColor: "#ffffff",
+      logging: false,
+      useCORS: true,
+      scale: 2
+    });
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+    if (!blob) throw new Error("Failed to generate image");
+
+    await navigator.clipboard.write([
+      new ClipboardItem({ "image/png": blob })
+    ]);
+
+    btn.textContent = "Copied!";
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }, 2000);
+  } catch (err) {
+    console.error("Ticker screenshot failed", err);
+    alert("Failed to copy screenshot. Please check browser clipboard permissions.");
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  } finally {
+    if (wrapper.parentNode) {
+      wrapper.parentNode.removeChild(wrapper);
     }
   }
 }
