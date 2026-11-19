@@ -183,6 +183,33 @@
     background: var(--color-canvas);
   }
 
+  .search-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px 12px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--color-hairline);
+    font-size: 13px;
+    color: var(--color-mid-gray);
+  }
+  .search-clear-btn {
+    background: none;
+    border: 1px solid var(--color-hairline);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-family: var(--font-geist);
+    font-size: 12px;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .search-clear-btn:hover {
+    background: var(--color-ink);
+    color: var(--color-surface-alt);
+    border-color: var(--color-ink);
+  }
+
   main { flex: 1; min-width: 0; }
 
   .card {
@@ -512,12 +539,14 @@ function renderDetail(item, idx) {
   `;
 }
 
-function renderTable(items) {
+function renderTable(items, showDateCol = false) {
   if (!items.length) {
-    return `<div class="empty">No items for this date.</div>`;
+    return `<div class="empty">${showDateCol ? "No matching items across all dates." : "No items for this date."}</div>`;
   }
+  const colSpan = showDateCol ? 9 : 8;
   const rows = items.map((item, i) => `
     <tr class="row-main" data-idx="${i}">
+      ${showDateCol ? `<td class="muted" style="white-space: nowrap;">${item._date ?? "-"}</td>` : ""}
       <td><span class="badge">${item.ticker ?? "-"}</span></td>
       <td class="name">${item.name ?? "-"}</td>
       <td>${surpriseCell(item)}</td>
@@ -528,12 +557,12 @@ function renderTable(items) {
       <td>${item.quarter ?? "-"}</td>
     </tr>
     <tr class="row-summary" id="summary-${i}" style="display: none;">
-      <td colspan="8">${renderDetail(item, i)}</td>
+      <td colspan="${colSpan}">${renderDetail(item, i)}</td>
     </tr>
   `).join("");
   return `
     <table>
-      <thead><tr><th>Ticker</th><th>Name</th><th>Surprise / Guidance</th><th class="num-cell">EPS (reported)</th><th class="num-cell">Revenue (reported, $M)</th><th class="num-cell">Earnings growth (YoY)</th><th class="num-cell">Revenue growth (YoY)</th><th>Quarter</th></tr></thead>
+      <thead><tr>${showDateCol ? "<th>Date</th>" : ""}<th>Ticker</th><th>Name</th><th>Surprise / Guidance</th><th class="num-cell">EPS (reported)</th><th class="num-cell">Revenue (reported, $M)</th><th class="num-cell">Earnings growth (YoY)</th><th class="num-cell">Revenue growth (YoY)</th><th>Quarter</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
@@ -658,6 +687,7 @@ function renderCalendar() {
 
   nav.querySelectorAll(".cal-day.available").forEach(btn => {
     btn.addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
       selectDate(btn.dataset.date);
     });
   });
@@ -665,6 +695,7 @@ function renderCalendar() {
   const latestBtn = document.getElementById("calLatestBtn");
   if (latestBtn) {
     latestBtn.addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
       const { year, month } = parseDateParts(latestDate);
       viewYear = year;
       viewMonth = month;
@@ -673,37 +704,138 @@ function renderCalendar() {
   }
 }
 
-async function selectDate(date) {
+const dayCache = new Map();
+let allDatesLoadPromise = null;
+let searchDebounceTimer = null;
+
+async function getDayCached(date, forceRefresh = false) {
+  if (!forceRefresh && dayCache.has(date)) {
+    return dayCache.get(date);
+  }
+  const items = await loadDay(date);
+  dayCache.set(date, items);
+  return items;
+}
+
+async function ensureAllDatesLoaded(onProgress) {
+  const missing = availableDates.filter(d => !dayCache.has(d));
+  if (!missing.length) return;
+
+  if (allDatesLoadPromise) {
+    await allDatesLoadPromise;
+    return;
+  }
+
+  allDatesLoadPromise = (async () => {
+    const total = availableDates.length;
+    let loaded = total - missing.length;
+    if (onProgress) onProgress(loaded, total);
+
+    const BATCH_SIZE = 15;
+    for (let i = 0; i < missing.length; i += BATCH_SIZE) {
+      const batch = missing.slice(i, i + BATCH_SIZE);
+      await Promise.allSettled(
+        batch.map(async (d) => {
+          try {
+            const items = await loadDay(d);
+            dayCache.set(d, items);
+          } catch (_) {
+            dayCache.set(d, []);
+          } finally {
+            loaded++;
+            if (onProgress) onProgress(loaded, total);
+          }
+        })
+      );
+    }
+  })();
+
+  try {
+    await allDatesLoadPromise;
+  } finally {
+    allDatesLoadPromise = null;
+  }
+}
+
+async function selectDate(date, forceRefresh = false) {
   activeDateStr = date;
   renderCalendar();
   const content = document.getElementById("content");
-  content.innerHTML = `<div class="empty">Loading ${date}…</div>`;
+  const hasSearch = document.getElementById("searchInput").value.trim().length > 0;
+  if (!hasSearch) {
+    content.innerHTML = `<div class="empty">Loading ${date}…</div>`;
+  }
   try {
-    currentItems = await loadDay(date);
+    currentItems = await getDayCached(date, forceRefresh);
     renderCurrentItems();
   } catch (e) {
-    content.innerHTML = `<div class="empty">Failed to load ${date}: ${e.message}</div>`;
+    if (!hasSearch) {
+      content.innerHTML = `<div class="empty">Failed to load ${date}: ${e.message}</div>`;
+    }
     currentItems = [];
   }
 }
 
-function renderCurrentItems() {
+async function renderCurrentItems() {
   const content = document.getElementById("content");
-  const query = document.getElementById("searchInput").value.toLowerCase();
-  
-  let filtered = currentItems;
-  if (query) {
-    filtered = currentItems.filter(item => 
-      (item.ticker && item.ticker.toLowerCase().includes(query)) ||
-      (item.name && item.name.toLowerCase().includes(query))
-    );
+  const rawQuery = document.getElementById("searchInput").value.trim();
+  const query = rawQuery.toLowerCase();
+
+  if (!query) {
+    content.innerHTML = renderTable(currentItems, false);
+    attachRowToggles();
+    return;
   }
-  
-  content.innerHTML = renderTable(filtered);
+
+  const missingCount = availableDates.filter(d => !dayCache.has(d)).length;
+  if (missingCount > 0) {
+    content.innerHTML = `<div class="empty">Searching all dates…</div>`;
+    await ensureAllDatesLoaded((loaded, total) => {
+      if (document.getElementById("searchInput").value.trim().toLowerCase() === query) {
+        content.innerHTML = `<div class="empty">Searching all dates… (${loaded} / ${total})</div>`;
+      }
+    });
+    // Abort if the user changed the query while loading
+    if (document.getElementById("searchInput").value.trim().toLowerCase() !== query) {
+      return;
+    }
+  }
+
+  const matches = [];
+  for (const date of availableDates) {
+    const items = dayCache.get(date) || [];
+    for (const item of items) {
+      if (
+        (item.ticker && item.ticker.toLowerCase().includes(query)) ||
+        (item.name && item.name.toLowerCase().includes(query))
+      ) {
+        matches.push({ ...item, _date: date });
+      }
+    }
+  }
+
+  const statusHtml = `
+    <div class="search-status-bar" data-html2canvas-ignore="true">
+      <span>Showing <strong>${matches.length}</strong> ${matches.length === 1 ? "result" : "results"} across all ${availableDates.length} dates for "${escapeHtml(rawQuery)}"</span>
+      <button class="search-clear-btn" id="clearSearchBtn">Clear</button>
+    </div>
+  `;
+  content.innerHTML = statusHtml + renderTable(matches, true);
   attachRowToggles();
+
+  const clearBtn = document.getElementById("clearSearchBtn");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
+      renderCurrentItems();
+    });
+  }
 }
 
-document.getElementById("searchInput").addEventListener("input", renderCurrentItems);
+document.getElementById("searchInput").addEventListener("input", () => {
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(renderCurrentItems, 150);
+});
 
 async function init() {
   const nav = document.getElementById("dateNav");
@@ -719,9 +851,9 @@ async function init() {
       const { year, month } = parseDateParts(dates[0]);
       viewYear = year;
       viewMonth = month;
-      selectDate(dates[0]);
+      selectDate(dates[0], true);
     } else if (availableDateSet.has(activeDateStr)) {
-      selectDate(activeDateStr);
+      selectDate(activeDateStr, true);
     } else {
       renderCalendar();
     }
@@ -763,7 +895,8 @@ async function copyScreenshot() {
   title.style.letterSpacing = "-0.5px";
   
   const dateSub = document.createElement("div");
-  dateSub.textContent = activeDateStr || "";
+  const activeQuery = document.getElementById("searchInput").value.trim();
+  dateSub.textContent = activeQuery ? `Search results for "${activeQuery}"` : (activeDateStr || "");
   dateSub.style.fontSize = "13px";
   dateSub.style.color = "var(--color-mid-gray)";
   dateSub.style.marginTop = "4px";
