@@ -69,44 +69,119 @@
     }
     nav {
       width: 100% !important;
-      display: flex;
-      overflow-x: auto;
-      white-space: nowrap;
-      padding: 8px;
-    }
-    nav button {
-      display: inline-block !important;
-      width: auto !important;
-      margin-bottom: 0 !important;
-      margin-right: 8px;
     }
   }
 
   nav {
-    width: 220px;
+    width: 272px;
     flex-shrink: 0;
     background: var(--color-surface-alt);
     border: 1px solid var(--color-hairline);
     border-radius: 24px;
-    padding: 8px;
+    padding: 14px;
   }
-  nav button {
-    display: block;
-    width: 100%;
-    text-align: left;
-    padding: 8px 12px;
-    margin-bottom: 2px;
+
+  .cal-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .cal-select {
+    padding: 7px 10px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 10px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-geist);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .cal-select:focus, .cal-select:hover {
+    border-color: var(--color-ink);
+  }
+  #calMonthSelect { flex: 1; min-width: 0; }
+  #calYearSelect { width: 82px; }
+
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 6px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-mid-gray);
+    text-transform: uppercase;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: #c4c4c4;
+    font-family: var(--font-geist);
+    font-size: 13px;
+    font-weight: 400;
+    padding: 0;
+    cursor: default;
+  }
+  .cal-day.available {
+    background: var(--color-paper);
+    border-color: var(--color-hairline);
+    color: var(--color-ink);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .cal-day.available:hover {
+    background: var(--color-canvas);
+    border-color: var(--color-ink);
+  }
+  .cal-day.active {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-surface-alt);
+  }
+  .cal-day.active:hover {
+    background: var(--color-ink);
+    color: var(--color-surface-alt);
+  }
+  .cal-footer {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--color-mid-gray);
+  }
+  .cal-latest-btn {
     background: none;
     border: none;
-    border-radius: 18px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-family: var(--font-geist);
+    font-size: 12px;
+    font-weight: 500;
     color: var(--color-ink);
     cursor: pointer;
-    font-family: var(--font-geist);
-    font-size: 14px;
-    font-weight: 500;
+    text-decoration: underline;
   }
-  nav button:hover { background: var(--color-canvas); }
-  nav button.active { background: var(--color-ink); color: var(--color-surface-alt); }
+  .cal-latest-btn:hover {
+    background: var(--color-canvas);
+  }
 
   main { flex: 1; min-width: 0; }
 
@@ -475,12 +550,132 @@ function attachRowToggles() {
   });
 }
 
-let activeDateStr = null;
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
-async function selectDate(date, btn) {
+let activeDateStr = null;
+let availableDates = [];
+let availableDateSet = new Set();
+let availableByYear = {}; // { 2026: Set([7, 8, 9, 10, 11]) }
+let viewYear = null;
+let viewMonth = null; // 1-12
+
+function parseDateParts(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return { year: y, month: m, day: d };
+}
+
+function buildDateIndex(dates) {
+  availableDates = dates;
+  availableDateSet = new Set(dates);
+  availableByYear = {};
+  for (const d of dates) {
+    const { year, month } = parseDateParts(d);
+    if (!availableByYear[year]) availableByYear[year] = new Set();
+    availableByYear[year].add(month);
+  }
+}
+
+function renderCalendar() {
+  const nav = document.getElementById("dateNav");
+  if (!availableDates.length) {
+    nav.innerHTML = `<div class="nav-empty">No data yet</div>`;
+    return;
+  }
+
+  const years = Object.keys(availableByYear).map(Number).sort((a, b) => b - a);
+  if (!viewYear || !availableByYear[viewYear]) {
+    viewYear = years[0];
+  }
+
+  const months = Array.from(availableByYear[viewYear]).sort((a, b) => a - b);
+  if (!viewMonth || !availableByYear[viewYear].has(viewMonth)) {
+    viewMonth = months[months.length - 1];
+  }
+
+  const monthOptions = months.map(m =>
+    `<option value="${m}" ${m === viewMonth ? "selected" : ""}>${MONTH_NAMES[m - 1]}</option>`
+  ).join("");
+
+  const yearOptions = years.map(y =>
+    `<option value="${y}" ${y === viewYear ? "selected" : ""}>${y}</option>`
+  ).join("");
+
+  const firstWeekday = new Date(viewYear, viewMonth - 1, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
+
+  let cells = "";
+  for (let i = 0; i < firstWeekday; i++) {
+    cells += `<div class="cal-day"></div>`;
+  }
+
+  const mm = String(viewMonth).padStart(2, "0");
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dd = String(day).padStart(2, "0");
+    const dateStr = `${viewYear}-${mm}-${dd}`;
+    const isAvail = availableDateSet.has(dateStr);
+    const isActive = dateStr === activeDateStr;
+    if (isAvail) {
+      cells += `<button class="cal-day available${isActive ? " active" : ""}" data-date="${dateStr}" title="${dateStr}">${day}</button>`;
+    } else {
+      cells += `<button class="cal-day" disabled>${day}</button>`;
+    }
+  }
+
+  const latestDate = availableDates[0];
+  const showLatestBtn = activeDateStr && activeDateStr !== latestDate;
+
+  nav.innerHTML = `
+    <div class="cal-controls">
+      <select id="calMonthSelect" class="cal-select" aria-label="Select month">${monthOptions}</select>
+      <select id="calYearSelect" class="cal-select" aria-label="Select year">${yearOptions}</select>
+    </div>
+    <div class="cal-weekdays">
+      <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+    </div>
+    <div class="cal-grid">${cells}</div>
+    <div class="cal-footer">
+      <span>${activeDateStr || ""}</span>
+      ${showLatestBtn ? `<button class="cal-latest-btn" id="calLatestBtn">Latest</button>` : ""}
+    </div>
+  `;
+
+  document.getElementById("calYearSelect").addEventListener("change", (e) => {
+    viewYear = Number(e.target.value);
+    const yrMonths = Array.from(availableByYear[viewYear]).sort((a, b) => a - b);
+    if (!yrMonths.includes(viewMonth)) {
+      viewMonth = yrMonths[yrMonths.length - 1];
+    }
+    renderCalendar();
+  });
+
+  document.getElementById("calMonthSelect").addEventListener("change", (e) => {
+    viewMonth = Number(e.target.value);
+    renderCalendar();
+  });
+
+  nav.querySelectorAll(".cal-day.available").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectDate(btn.dataset.date);
+    });
+  });
+
+  const latestBtn = document.getElementById("calLatestBtn");
+  if (latestBtn) {
+    latestBtn.addEventListener("click", () => {
+      const { year, month } = parseDateParts(latestDate);
+      viewYear = year;
+      viewMonth = month;
+      selectDate(latestDate);
+    });
+  }
+}
+
+async function selectDate(date) {
   activeDateStr = date;
-  document.querySelectorAll("#dateNav button").forEach(b => b.classList.remove("active"));
-  if (btn) btn.classList.add("active");
+  renderCalendar();
   const content = document.getElementById("content");
   content.innerHTML = `<div class="empty">Loading ${date}…</div>`;
   try {
@@ -518,24 +713,17 @@ async function init() {
       nav.innerHTML = `<div class="nav-empty">No data yet</div>`;
       return;
     }
-    nav.innerHTML = "";
-    dates.forEach((date, i) => {
-      const btn = document.createElement("button");
-      btn.textContent = date;
-      btn.onclick = () => selectDate(date, btn);
-      nav.appendChild(btn);
-      if (activeDateStr === date) {
-        btn.classList.add("active");
-      }
-    });
-    
-    if (!activeDateStr && dates.length > 0) {
-      // First load, select the most recent date
-      const firstBtn = nav.querySelector("button");
-      selectDate(dates[0], firstBtn);
-    } else if (activeDateStr && dates.includes(activeDateStr)) {
-      // Reload current date data to ensure it's fresh
-      selectDate(activeDateStr, Array.from(nav.querySelectorAll("button")).find(b => b.textContent === activeDateStr));
+    buildDateIndex(dates);
+
+    if (!activeDateStr) {
+      const { year, month } = parseDateParts(dates[0]);
+      viewYear = year;
+      viewMonth = month;
+      selectDate(dates[0]);
+    } else if (availableDateSet.has(activeDateStr)) {
+      selectDate(activeDateStr);
+    } else {
+      renderCalendar();
     }
   } catch (e) {
     nav.innerHTML = `<div class="nav-empty">Failed to load manifest: ${e.message}</div>`;
